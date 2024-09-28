@@ -1,30 +1,24 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
-
-// Create some dummy screens for navigation
-const HomeScreen = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text>Home Screen</Text>
-  </View>
-);
+import { NavigationContainer } from "@react-navigation/native";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import HomeScreen from "./components/HomeScreen";
 
 const RealTimeUpdatesScreen = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  <View style={styles.screen}>
     <Text>Real Time Updates Screen</Text>
   </View>
 );
 
 const ResourceSharingScreen = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  <View style={styles.screen}>
     <Text>Resource Sharing Screen</Text>
   </View>
 );
 
 const SettingsScreen = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  <View style={styles.screen}>
     <Text>Settings Screen</Text>
   </View>
 );
@@ -49,6 +43,9 @@ const App = () => {
                 break;
               case "Resource Sharing":
                 iconName = "folder";
+                break;
+              case "AI Chatbot":
+                iconName = "chatbubbles";
                 break;
               case "Settings":
                 iconName = "settings";
@@ -79,6 +76,7 @@ const App = () => {
           name="Resource Sharing"
           component={ResourceSharingScreen}
         />
+
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
@@ -87,5 +85,17 @@ const App = () => {
     </NavigationContainer>
   );
 };
+
+// Styles
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  screen: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default App;
