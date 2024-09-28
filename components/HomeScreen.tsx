@@ -94,7 +94,7 @@ const HomeScreen = () => {
           <View style={styles.bottomCard}>
             <View style={{ width: "100%", gap: 10 }}>
               <Button
-                labelStyle={{ color: "black", paddingVertical: 4 }}
+                labelStyle={{ color: "white", paddingVertical: 4 }}
                 style={{
                   backgroundColor: "#FFB248",
                   borderRadius: 5,

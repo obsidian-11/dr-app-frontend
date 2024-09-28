@@ -72,7 +72,7 @@ const Shelter = () => {
             )}
           />
           <List.Item
-            title="Beds"
+            title="4 Beds"
             titleStyle={{ fontSize: 14 }}
             //   description="..."
             left={(props) => (
@@ -131,7 +131,7 @@ const Shelter = () => {
 
         <Button
           style={{ backgroundColor: "#FFB248", marginTop: 20, borderRadius: 5 }}
-          labelStyle={{ color: "black", paddingVertical: 3 }}
+          labelStyle={{ color: "white", paddingVertical: 3 }}
           onPress={() => {}}
         >
           Navigate to Shelter

@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack"; // Import Stack Navigator
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack"; // Import Stack Navigator
 import HomeScreen from "./components/HomeScreen";
 import Shelter from "./components/Shelter";
+import Updates from "./components/Updates";
 
 const RealTimeUpdatesScreen = () => (
   <View style={styles.screen}>
@@ -68,7 +69,7 @@ const MapScreen = () => {
       />
       <Tab.Screen
         name="Real Time Updates"
-        component={RealTimeUpdatesScreen}
+        component={Updates}
       />
       <Tab.Screen
         name="Resource Sharing"
