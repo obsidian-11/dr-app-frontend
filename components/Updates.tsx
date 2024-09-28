@@ -13,8 +13,10 @@ import {
   Paragraph,
   FAB,
   ActivityIndicator,
+  Text,
 } from "react-native-paper";
 import axios from "axios";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure to install this package
 
 type Post = {
   id: number;
@@ -22,6 +24,7 @@ type Post = {
   description: string;
   author: string;
   comments: number;
+  authority?: boolean;
 };
 
 const initialPosts: Post[] = [
@@ -40,6 +43,7 @@ const initialPosts: Post[] = [
       "If anyone needs shelter or knows someone who does, please reach out! We have a safe space available for those in need.",
     author: "Jane Smith",
     comments: 10,
+    authority: true,
   },
   {
     id: 3,
@@ -86,9 +90,47 @@ const CommunityPosts = () => {
           <View style={styles.cardContent}>
             <View style={styles.postContent}>
               <Card.Title
-                title={post.title}
+                title={
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 10,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "bold", paddingTop: 5 }}>
+                      {post.title}
+                    </Text>
+                    {post.authority && (
+                      <View
+                        style={{
+                          backgroundColor: "#45b7ff",
+                          borderRadius: 5,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 5,
+                          paddingHorizontal: 8,
+                        }}
+                      >
+                        <Icon
+                          color="white"
+                          name="check"
+                        />
+                        <Text
+                          style={{
+                            color: "#fff",
+                            // paddingHorizontal: 8,
+                            paddingVertical: 3,
+                          }}
+                          variant="bodySmall"
+                        >
+                          Verified Local Authority
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                }
                 titleVariant="bodyMedium"
-                titleStyle={{ fontWeight: "bold" }}
                 subtitle="Sep 27 at 3:30 pm"
                 subtitleStyle={{ paddingBottom: 12, color: "#7b7b7b" }}
               />
@@ -209,7 +251,7 @@ const NewsFeed = () => {
 };
 
 const Updates = () => {
-  const [activeTab, setActiveTab] = useState<"community" | "news">("community");
+  const [activeTab, setActiveTab] = useState<"community" | "news">("news");
 
   const handleNewPost = () => {
     Alert.alert("Create New Post", "Navigating to the new post screen...");
