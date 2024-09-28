@@ -75,7 +75,12 @@ const HomeScreen = () => {
           </MapView>
 
           {disaster && (
-            <View style={styles.card}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Real Time Updates");
+              }}
+              style={styles.card}
+            >
               <View>
                 <Text style={styles.cardTitle}>{disaster.name}</Text>
                 <Text style={styles.cardUpdate}>{disaster.recentUpdate}</Text>
@@ -88,7 +93,7 @@ const HomeScreen = () => {
               >
                 <Text style={styles.infoButtonText}>i</Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           )}
 
           <View style={styles.bottomCard}>

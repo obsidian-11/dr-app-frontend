@@ -1,6 +1,20 @@
-import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, Paragraph, Text, FAB } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  View,
+  RefreshControl,
+} from "react-native";
+import {
+  Button,
+  Card,
+  Paragraph,
+  FAB,
+  ActivityIndicator,
+} from "react-native-paper";
+import axios from "axios";
 
 type Post = {
   id: number;
@@ -39,83 +53,171 @@ const initialPosts: Post[] = [
 
 const CommunityPosts = () => {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  // Function to handle comments button press
+  const handleRefresh = () => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // For demonstration, you can re-fetch the posts or reset them as needed
+      setRefreshing(false);
+    }, 1000);
+  };
+
   const handleCommentsPress = (title: string) => {
     Alert.alert(`Comments for: ${title}`, "Navigating to comments...");
   };
 
   return (
-    <>
-      <ScrollView style={styles.content}>
-        {posts.map((post) => (
-          <Card
-            key={post.id}
-            style={styles.card}
-          >
-            <View style={styles.cardContent}>
-              {/* Post Content */}
-              <View style={styles.postContent}>
-                <Card.Title
-                  title={post.title}
-                  titleVariant="bodyMedium"
-                  titleStyle={{ fontWeight: "bold" }}
-                  subtitle="Sep 27 at 3:30 pm"
-                  subtitleStyle={{ paddingBottom: 12, color: "#7b7b7b" }}
-                />
-                <Card.Content>
-                  <Paragraph style={{ color: "#7b7b7b", marginTop: -10 }}>
-                    {post.description}
-                  </Paragraph>
-                </Card.Content>
-                <View style={styles.postActions}>
-                  <Button
-                    icon="comment"
-                    labelStyle={styles.buttonLabel}
-                    onPress={() => handleCommentsPress(post.title)}
-                  >
-                    {post.comments} Comments
-                  </Button>
-                </View>
+    <ScrollView
+      style={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      }
+    >
+      {posts.map((post) => (
+        <Card
+          key={post.id}
+          style={styles.card}
+        >
+          <View style={styles.cardContent}>
+            <View style={styles.postContent}>
+              <Card.Title
+                title={post.title}
+                titleVariant="bodyMedium"
+                titleStyle={{ fontWeight: "bold" }}
+                subtitle="Sep 27 at 3:30 pm"
+                subtitleStyle={{ paddingBottom: 12, color: "#7b7b7b" }}
+              />
+              <Card.Content>
+                <Paragraph style={{ color: "#7b7b7b", marginTop: -10 }}>
+                  {post.description}
+                </Paragraph>
+              </Card.Content>
+              <View style={styles.postActions}>
+                <Button
+                  icon="comment"
+                  labelStyle={styles.buttonLabel}
+                  onPress={() => handleCommentsPress(post.title)}
+                >
+                  {post.comments} Comments
+                </Button>
               </View>
             </View>
-          </Card>
-        ))}
-      </ScrollView>
-    </>
+          </View>
+        </Card>
+      ))}
+    </ScrollView>
   );
 };
 
-const NewsFeed = () => (
-  <View style={styles.content}>
-    <Text>News Feed will appear here.</Text>
-  </View>
-);
+const NewsFeed = () => {
+  const [news, setNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const fetchNews = async () => {
+    try {
+      const response = await axios.get(
+        `https://newsapi.org/v2/everything?q=${"hurricane%20helene"}&apiKey=979f7b95c14e4900a79731209c13f879`
+      );
+      const sortedArticles = response.data.articles.sort((a: any, b: any) => {
+        return (
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        );
+      });
+      setNews(sortedArticles);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to fetch news. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchNews().finally(() => setRefreshing(false));
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  if (loading) {
+    return (
+      <ActivityIndicator
+        animating={true}
+        size="small"
+        style={styles.loadingIndicator}
+      />
+    );
+  }
+
+  return (
+    <ScrollView
+      style={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      }
+    >
+      {news.map(
+        (article, index) =>
+          article.description &&
+          article.url && (
+            <Card
+              key={index}
+              style={styles.card}
+              onPress={() => Linking.openURL(article.url)}
+            >
+              <View style={styles.cardContent}>
+                {article.urlToImage && (
+                  <Card.Cover
+                    style={{ borderRadius: 5 }}
+                    source={{ uri: article.urlToImage }}
+                  />
+                )}
+                <Card.Title
+                  titleNumberOfLines={3}
+                  title={article.title}
+                  titleVariant="bodyMedium"
+                  titleStyle={{ fontWeight: "bold", paddingVertical: 15 }}
+                  subtitle={`${new Date(
+                    article.publishedAt
+                  ).toLocaleDateString()}`}
+                  subtitleStyle={{ color: "#7b7b7b", marginBottom: 10 }}
+                />
+                <Card.Content>
+                  <Paragraph style={{ color: "#7b7b7b", marginBottom: 15 }}>
+                    {article.description.length > 150
+                      ? `${article.description.slice(0, 150)}...`
+                      : article.description}
+                  </Paragraph>
+                </Card.Content>
+              </View>
+            </Card>
+          )
+      )}
+    </ScrollView>
+  );
+};
 
 const Updates = () => {
   const [activeTab, setActiveTab] = useState<"community" | "news">("community");
 
-  // Function to handle creating a new post
   const handleNewPost = () => {
     Alert.alert("Create New Post", "Navigating to the new post screen...");
   };
 
   return (
     <View style={styles.container}>
-      {/* Tab Buttons */}
       <View style={styles.tabContainer}>
-        <Button
-          mode={activeTab === "community" ? "contained" : "outlined"}
-          onPress={() => setActiveTab("community")}
-          style={{
-            ...styles.tabButton,
-            backgroundColor: activeTab === "community" ? "#FFB248" : undefined,
-          }}
-          labelStyle={{ color: activeTab === "community" ? "white" : "black" }}
-          contentStyle={{ paddingVertical: 4 }}
-        >
-          Community Posts
-        </Button>
         <Button
           mode={activeTab === "news" ? "contained" : "outlined"}
           onPress={() => setActiveTab("news")}
@@ -128,18 +230,30 @@ const Updates = () => {
         >
           News Feed
         </Button>
+        <Button
+          mode={activeTab === "community" ? "contained" : "outlined"}
+          onPress={() => setActiveTab("community")}
+          style={{
+            ...styles.tabButton,
+            backgroundColor: activeTab === "community" ? "#FFB248" : undefined,
+          }}
+          labelStyle={{ color: activeTab === "community" ? "white" : "black" }}
+          contentStyle={{ paddingVertical: 4 }}
+        >
+          Community Posts
+        </Button>
       </View>
 
-      {/* Content Based on Active Tab */}
       {activeTab === "community" ? <CommunityPosts /> : <NewsFeed />}
 
-      {/* Floating Action Button */}
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        label=""
-        onPress={handleNewPost}
-      />
+      {activeTab === "community" && (
+        <FAB
+          style={styles.fab}
+          icon="plus"
+          label=""
+          onPress={handleNewPost}
+        />
+      )}
     </View>
   );
 };
@@ -172,7 +286,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   cardContent: {
-    flexDirection: "row",
+    flexDirection: "column",
     padding: 10,
   },
   postContent: {
@@ -193,6 +307,10 @@ const styles = StyleSheet.create({
     bottom: 10,
     backgroundColor: "#FFB248",
     borderRadius: 100,
+  },
+  loadingIndicator: {
+    flex: 1,
+    justifyContent: "center",
   },
 });
 
