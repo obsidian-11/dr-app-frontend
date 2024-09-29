@@ -1,8 +1,11 @@
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Linking,
   Modal,
@@ -43,18 +46,59 @@ const HomeScreen = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
+    const api = axios.create({
+      baseURL: process.env.EXPO_PUBLIC_API_URL,
+      withCredentials: true,
+    });
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         return;
       }
 
       let locationData = await Location.getCurrentPositionAsync({});
+
       setLocation({
         latitude: locationData.coords.latitude,
         longitude: locationData.coords.longitude,
       });
+
+      try {
+        const response = await api.post("/api/update-location/", {
+          latitude: locationData.coords.latitude,
+          longitude: locationData.coords.longitude,
+        });
+        console.log("Response:", response.data);
+      } catch (error: any) {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          console.log("Error Response:", error.response.data);
+          console.log("Error Status:", error.response.status);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log("Error Request:", error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error Message:", error.message);
+        }
+      }
+
+      try {
+        const response = await api.get("/api/fetch-shelters/");
+        console.log("Response 2 =", response.data);
+      } catch (error: any) {
+        if (error.response) {
+          console.log("Error Response:", error.response.data);
+          console.log("Error Status:", error.response.status);
+        } else if (error.request) {
+          console.log("Error Request:", error.request);
+        } else {
+          console.log("Error Message:", error.message);
+        }
+      }
     })();
   }, []);
 
