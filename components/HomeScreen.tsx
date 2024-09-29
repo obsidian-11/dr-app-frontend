@@ -157,7 +157,12 @@ const HomeScreen = () => {
                   latitude: shelter.latitude,
                   longitude: shelter.longitude,
                 }}
-                onPress={() => navigation.navigate("Shelter")}
+                onPress={() =>
+                  navigation.navigate("Shelter", {
+                    shelter: shelter,
+                    userLocation: location,
+                  })
+                }
               >
                 <View>
                   <Image
