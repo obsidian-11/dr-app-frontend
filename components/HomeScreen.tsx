@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
   Linking,
   Modal,
   Pressable,
@@ -23,11 +24,25 @@ import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure to inst
 
 const { width, height } = Dimensions.get("window");
 
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+  name: string;
+  place: string;
+}
+
+interface ShelterResponse {
+  coordinates: Coordinates[];
+}
+
 const HomeScreen = () => {
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+
+  const [shelters, setShelters] = useState<Coordinates[]>([]);
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [disaster, setDisaster] = useState<{
     name: string;
@@ -88,6 +103,7 @@ const HomeScreen = () => {
 
       try {
         const response = await api.get("/api/fetch-shelters/");
+        setShelters(response.data.coordinates);
         console.log("Response 2 =", response.data);
       } catch (error: any) {
         if (error.response) {
@@ -134,6 +150,24 @@ const HomeScreen = () => {
               title="Your Location"
               pinColor="#af3131"
             />
+            {shelters.map((shelter, index) => (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: shelter.latitude,
+                  longitude: shelter.longitude,
+                }}
+                onPress={() => navigation.navigate("Shelter")}
+              >
+                <View>
+                  <Image
+                    style={{ width: 40, height: 40 }}
+                    source={require("../assets/family_5201754.png")}
+                  />
+                  {/* <Text>{shelter.name}</Text> */}
+                </View>
+              </Marker>
+            ))}
           </MapView>
 
           {disaster && (
@@ -184,17 +218,6 @@ const HomeScreen = () => {
                 onPress={() => {}}
               >
                 Find nearest shelter
-              </Button>
-              <Button
-                style={{
-                  borderColor: "#DDDDDD",
-                  borderWidth: 1,
-                  borderRadius: 5,
-                }}
-                labelStyle={{ color: "black", paddingVertical: 4 }}
-                onPress={() => navigation.navigate("Shelter")}
-              >
-                Add your shelter
               </Button>
             </View>
           </View>
