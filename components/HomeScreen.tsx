@@ -1,20 +1,22 @@
+import { useNavigation } from "@react-navigation/native";
+import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  Dimensions,
   ActivityIndicator,
-  Text,
-  TouchableOpacity,
+  Dimensions,
+  Linking,
   Modal,
   Pressable,
-  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as Location from "expo-location";
 import { Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure to install this package
-import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -33,6 +35,10 @@ const HomeScreen = () => {
   });
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ sender: string; text: string }>
+  >([]);
+  const [inputText, setInputText] = useState<string>("");
 
   const navigation = useNavigation();
 
@@ -51,6 +57,17 @@ const HomeScreen = () => {
       });
     })();
   }, []);
+
+  const sendMessage = () => {
+    if (inputText.trim()) {
+      setChatMessages((prev) => [
+        ...prev,
+        { sender: "user", text: inputText.trim() },
+        { sender: "bot", text: "I'm here to help! How can I assist you?" }, // Placeholder response
+      ]);
+      setInputText("");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -151,16 +168,14 @@ const HomeScreen = () => {
           </TouchableOpacity>
 
           {/* Chatbot Modal */}
+
           <Modal
             animationType="slide"
             transparent={true}
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}
           >
-            <Pressable
-              style={styles.modalBackdrop}
-              // onPress={() => setModalVisible(false)}
-            >
+            <Pressable style={styles.modalBackdrop}>
               <View style={styles.modalView}>
                 <View
                   style={{
@@ -168,6 +183,9 @@ const HomeScreen = () => {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    borderBottomColor: "#e2e2e2",
+                    borderBottomWidth: 1,
+                    paddingBottom: 20,
                   }}
                 >
                   <Text style={styles.modalText}>AI Help</Text>
@@ -178,9 +196,47 @@ const HomeScreen = () => {
                     <Icon
                       name="close"
                       size={16}
-                      color="#000"
+                      color="#ffb248"
                     />
                   </Pressable>
+                </View>
+
+                {/* Chat Display */}
+                <ScrollView style={styles.chatContainer}>
+                  {chatMessages.map((msg, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.message,
+                        msg.sender === "user"
+                          ? styles.userMessage
+                          : styles.botMessage,
+                      ]}
+                    >
+                      <Text style={styles.messageText}>{msg.text}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+
+                {/* Chat Input */}
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Type your message..."
+                    placeholderTextColor={"#00000040"}
+                    value={inputText}
+                    onChangeText={setInputText}
+                  />
+                  <TouchableOpacity
+                    style={styles.sendButton}
+                    onPress={sendMessage}
+                  >
+                    <Icon
+                      name="send"
+                      size={24}
+                      color="#fff"
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             </Pressable>
@@ -273,8 +329,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoButtonText: {
-    color: "#882222",
     fontWeight: "bold",
+    color: "#333",
   },
   floatingButton: {
     position: "absolute",
@@ -286,7 +342,6 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: "center",
     alignItems: "center",
-    // elevation: 15,
     shadowColor: "#494949",
     shadowOffset: {
       width: 2,
@@ -298,46 +353,71 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)", // Optional: Darken the background
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalView: {
-    width: "90%",
-    height: "70%",
-    margin: 20,
-    marginTop: 50,
+    width: "85%",
     backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
+    borderRadius: 10,
+    padding: 20,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
   },
   modalText: {
-    // marginBottom: 15,
-    textAlign: "center",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
   },
   button: {
-    borderRadius: 100,
-    padding: 10,
+    borderRadius: 10,
+    padding: 8,
     elevation: 2,
   },
   buttonClose: {
-    backgroundColor: "#FFB248",
+    backgroundColor: "#ffb24830",
+    borderRadius: 100,
   },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+  chatContainer: {
+    height: 250,
+    width: "100%",
+    padding: 5,
+    marginTop: 10,
+  },
+  message: {
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 5,
+    maxWidth: "80%",
+  },
+  userMessage: {
+    backgroundColor: "#ffb24825",
+    alignSelf: "flex-end",
+  },
+  botMessage: {
+    backgroundColor: "#ECECEC60",
+    alignSelf: "flex-start",
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginTop: 10,
+  },
+  textInput: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: "#DDD",
+    marginRight: 10,
+  },
+  sendButton: {
+    backgroundColor: "#ffb248",
+    padding: 10,
+    borderRadius: 50,
   },
 });
 
