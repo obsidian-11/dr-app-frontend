@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import * as Location from "expo-location";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -18,7 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Region } from "react-native-maps";
 import { Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure to install this package
 
@@ -42,6 +42,9 @@ const HomeScreen = () => {
   } | null>(null);
 
   const [shelters, setShelters] = useState<Coordinates[]>([]);
+  const [region, setRegion] = useState<Region>();
+
+  console.log("shelters", shelters);
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [disaster, setDisaster] = useState<{
@@ -59,6 +62,75 @@ const HomeScreen = () => {
   const [inputText, setInputText] = useState<string>("");
 
   const navigation = useNavigation();
+
+  const degreesToRadians = (degrees: number): number => {
+    return degrees * (Math.PI / 180);
+  };
+
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = degreesToRadians(lat2 - lat1);
+    const dLon = degreesToRadians(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(degreesToRadians(lat1)) *
+        Math.cos(degreesToRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+
+  const findNearestShelter = () => {
+    if (!location) {
+      Alert.alert("Error", "User location is not available.");
+      return;
+    }
+
+    let nearestShelter: any = null;
+    let minDistance = Infinity;
+
+    shelters.forEach((shelter) => {
+      const distance = calculateDistance(
+        location.latitude,
+        location.longitude,
+        shelter.latitude,
+        shelter.longitude
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestShelter = shelter;
+      }
+    });
+
+    if (nearestShelter) {
+      console.log("foind it", {
+        latitude: nearestShelter.latitude,
+        longitude: nearestShelter.longitude,
+      });
+
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(
+          {
+            latitude: nearestShelter.latitude,
+            longitude: nearestShelter.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          },
+          1000
+        ); // Animate to the nearest shelter
+      }
+    } else {
+      Alert.alert("No Shelters", "No shelters found.");
+    }
+  };
 
   useEffect(() => {
     const api = axios.create({
@@ -129,11 +201,14 @@ const HomeScreen = () => {
     }
   };
 
+  const mapRef = useRef<MapView | null>(null); // Create a ref for the MapView
+
   return (
     <View style={styles.container}>
       {location ? (
         <>
           <MapView
+            ref={mapRef}
             style={styles.map}
             initialRegion={{
               latitude: location.latitude,
@@ -220,7 +295,7 @@ const HomeScreen = () => {
                   borderRadius: 5,
                 }}
                 labelStyle={{ color: "black", paddingVertical: 4 }}
-                onPress={() => {}}
+                onPress={() => findNearestShelter()}
               >
                 Find nearest shelter
               </Button>

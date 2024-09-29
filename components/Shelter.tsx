@@ -33,6 +33,21 @@ const Shelter: React.FC = () => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
 
+  // Random resources availability state
+  const [resources, setResources] = useState<{
+    food: boolean;
+    water: boolean;
+    electricity: boolean;
+    firstAid: boolean;
+    beds: number;
+  }>({
+    food: false,
+    water: false,
+    electricity: false,
+    firstAid: false,
+    beds: 0,
+  });
+
   // Haversine formula implementation
   const haversineDistance = (
     coords1: { latitude: number; longitude: number },
@@ -102,6 +117,22 @@ const Shelter: React.FC = () => {
     const dist = haversineDistance(userCoords, shelterCoords);
     setDistance(dist / 1.609); // Convert kilometers to miles
   }, [userLocation, shelter]);
+
+  // Randomly assign resources availability when the component mounts
+  useEffect(() => {
+    const randomResourceAvailability = () => {
+      const randomBeds = Math.floor(Math.random() * 10) + 1; // Random number between 1 and 10
+      setResources({
+        food: Math.random() < 0.5,
+        water: Math.random() < 0.5,
+        electricity: Math.random() < 0.5,
+        firstAid: Math.random() < 0.5,
+        beds: randomBeds,
+      });
+    };
+
+    randomResourceAvailability();
+  }, []);
 
   // Function to handle navigation to the shelter
   const navigateToShelter = () => {
@@ -191,56 +222,66 @@ const Shelter: React.FC = () => {
         </View>
 
         <View style={{ gap: 0, marginTop: 10 }}>
-          <List.Item
-            title="Food"
-            titleStyle={{ fontSize: 14 }}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="food"
-              />
-            )}
-          />
-          <List.Item
-            title="4 Beds"
-            titleStyle={{ fontSize: 14 }}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="bed"
-              />
-            )}
-          />
-          <List.Item
-            title="Water"
-            titleStyle={{ fontSize: 14 }}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="water"
-              />
-            )}
-          />
-          <List.Item
-            title="Electricity"
-            titleStyle={{ fontSize: 14 }}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="power-plug"
-              />
-            )}
-          />
-          <List.Item
-            title="First Aid"
-            titleStyle={{ fontSize: 14 }}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="pill"
-              />
-            )}
-          />
+          {resources.food && (
+            <List.Item
+              title="Food"
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="food"
+                />
+              )}
+            />
+          )}
+          {resources.beds > 0 && (
+            <List.Item
+              title={`${resources.beds} Beds`}
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="bed"
+                />
+              )}
+            />
+          )}
+          {resources.water && (
+            <List.Item
+              title="Water"
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="water"
+                />
+              )}
+            />
+          )}
+          {resources.electricity && (
+            <List.Item
+              title="Electricity"
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="power-plug"
+                />
+              )}
+            />
+          )}
+          {resources.firstAid && (
+            <List.Item
+              title="First Aid"
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="pill"
+                />
+              )}
+            />
+          )}
         </View>
 
         {/* Contact Info */}
@@ -251,35 +292,45 @@ const Shelter: React.FC = () => {
           Contact Info
         </Text>
 
-        <View style={{ marginTop: 6, gap: 6 }}>
-          {placeDetails?.formatted_phone_number ? (
-            <Text style={{ color: "#777777" }}>
-              Phone: {placeDetails.formatted_phone_number}
-            </Text>
-          ) : (
-            <Text style={{ color: "#777777" }}>Phone: Not available</Text>
+        <View style={{ marginTop: 6, gap: 5 }}>
+          {placeDetails?.formatted_phone_number && (
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Icon
+                color="#707070"
+                name="phone"
+                size={20}
+              />
+              <Text>{placeDetails.formatted_phone_number}</Text>
+            </View>
           )}
-          {placeDetails?.website ? (
-            <Text style={{ color: "#777777" }}>
-              Website: {placeDetails.website}
-            </Text>
-          ) : (
-            <Text style={{ color: "#777777" }}>Website: Not available</Text>
+          {placeDetails?.website && (
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Icon
+                color="#707070"
+                name="web"
+                size={20}
+              />
+              <Text
+                style={{ color: "#007bff" }}
+                onPress={() => Linking.openURL(placeDetails.website)}
+              >
+                {placeDetails.website}
+              </Text>
+            </View>
           )}
         </View>
 
-        {/* Navigate Button */}
+        {/* Navigate to Shelter Button */}
         <Button
-          style={{
-            backgroundColor: "#FFB248",
-            marginTop: 20,
-            borderRadius: 5,
-            marginBottom: 40,
-          }}
-          labelStyle={{ color: "white", paddingVertical: 3 }}
+          mode="contained"
+          style={{ marginTop: 20, backgroundColor: "#FFB248", borderRadius: 5 }}
           onPress={navigateToShelter}
         >
-          Navigate to Shelter
+          Get Directions
         </Button>
       </ScrollView>
     </View>
@@ -289,8 +340,7 @@ const Shelter: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-    paddingBottom: 10,
+    backgroundColor: "#fff",
   },
 });
 
