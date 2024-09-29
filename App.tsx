@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import HomeScreen from "./components/HomeScreen";
 import Shelter from "./components/Shelter";
 import Updates from "./components/Updates";
+import AddShelter from "./components/AddShelter";
 
 const RealTimeUpdatesScreen = () => (
   <View style={styles.screen}>
@@ -43,8 +44,8 @@ const MapScreen = () => {
             case "Real Time Updates":
               iconName = "timer";
               break;
-            case "Resource Sharing":
-              iconName = "folder";
+            case "Add Shelter":
+              iconName = "add";
               break;
             case "Settings":
               iconName = "settings";
@@ -72,8 +73,8 @@ const MapScreen = () => {
         component={Updates}
       />
       <Tab.Screen
-        name="Resource Sharing"
-        component={ResourceSharingScreen}
+        name="Add Shelter"
+        component={AddShelter}
       />
 
       <Tab.Screen

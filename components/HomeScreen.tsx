@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
   Pressable,
+  Linking,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
@@ -104,9 +105,13 @@ const HomeScreen = () => {
                   backgroundColor: "#FFB248",
                   borderRadius: 5,
                 }}
-                onPress={() => {}}
+                onPress={() => {
+                  Linking.openURL(`tel:${911}`).catch((err) =>
+                    console.error("Error making call:", err)
+                  );
+                }}
               >
-                Call for help
+                Send SOS
               </Button>
               <Button
                 style={{
@@ -117,7 +122,7 @@ const HomeScreen = () => {
                 labelStyle={{ color: "black", paddingVertical: 4 }}
                 onPress={() => {}}
               >
-                Find resources
+                Find nearest shelter
               </Button>
               <Button
                 style={{
@@ -268,7 +273,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoButtonText: {
-    color: "#af3131",
+    color: "#882222",
     fontWeight: "bold",
   },
   floatingButton: {
